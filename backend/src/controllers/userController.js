@@ -115,3 +115,13 @@ export const refreshAccessToken = async (req, res) => {
       .json({ message: "Refresh token expired or invalid" });
   }
 };
+
+
+export const logoutUser = async (req, res) => {
+    const { userId } = req.body;
+  
+    await saveRefreshToken(userId, null);
+  
+    res.json({ message: "Logged out" });
+  };
+  
