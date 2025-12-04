@@ -1,6 +1,8 @@
 import pool from "./src/config/db.js";
 import express from "express";
 import cors from "cors";
+import userRoutes from "./src/routes/userRoutes.js";
+
 
 const port = 5000;
 const app = express();
@@ -12,6 +14,7 @@ app.use(
   })
 );
 
+app.use("/api/users", userRoutes);
 app.get("/", (req, res) => {
   res.send("Backend API is running!");
 });
