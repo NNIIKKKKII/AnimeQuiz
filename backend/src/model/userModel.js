@@ -22,3 +22,28 @@ export const findUserByEmail = async (email) => {
     console.error("Error finding user by email:", err);
   }
 };
+
+export const saveRefreshToken = async (userId, token) => {
+  try {
+    const response = pool.query(
+      `UPDATE users SET refresh_token = $1 WHERE id = $2`,
+      [token, userId]
+    );
+  } catch (err) {
+    console.error("Error saving refresh token:", err);
+  }
+};
+
+
+
+export const getUserByRefreshToken = async (refreshToken) => {
+  try {
+    const response = await pool.query(
+      `SELECT * FROM users WHERE refresh_token = $1`,
+      [refreshToken]
+    );
+    return response.rows[0];
+  } catch (err) {
+    console.error("Error getting user by refresh token:", err);
+  }
+};

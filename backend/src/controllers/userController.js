@@ -1,8 +1,17 @@
 import pool from "../config/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { createUser, findUserByEmail } from "../model/userModel";
-
+import {
+  createUser,
+  findUserByEmail,
+  getUserByRefreshToken,
+  saveRefreshToken,
+} from "../model/userModel";
+import {
+  generateAcessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utils/token";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 //REGISTER
@@ -42,18 +51,24 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      {
-        id: userEmail.id,
-        email: userEmail.email,
-      },
-      JWT_SECRET,
-      { expiresIn: "24h" }
-    );
+    // const token = jwt.sign(
+    //   {
+    //     id: userEmail.id,
+    //     email: userEmail.email,
+    //   },
+    //   JWT_SECRET,
+    //   { expiresIn: "24h" }
+    // );
+
+    const accessToken = generateAcessToken(userEmail);
+    const refreshToken = generateRefreshToken(userEmail);
+
+    await saveRefreshToken(userEmail.id, refreshToken);
 
     res.status(200).json({
       message: "Login successful",
-      token,
+      accessToken,
+      refreshToken,
       user: {
         id: userEmail.id,
         username: userEmail.username,
@@ -63,5 +78,40 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     console.error("Error logging in user:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+//----------------------------------
+//        REFRESH TOKEN
+// ----------------------------------
+
+export const refreshAccessToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token required" });
+  }
+
+  try {
+    // Check if refresh token is stored in DB
+    const user = await getUserByRefreshToken(refreshToken);
+
+    if (!user) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // Verify signature & expiration
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Issue new access token
+    const newAccessToken = generateAccessToken({ id: user.id });
+
+    res.json({
+      accessToken: newAccessToken,
+    });
+  } catch (err) {
+    return res
+      .status(403)
+      .json({ message: "Refresh token expired or invalid" });
   }
 };
