@@ -1,4 +1,4 @@
-import { saveScore, getLeaderboard } from "../models/scoreModel.js";
+import { saveScore, getLeaderboard } from "../model/scoreModel.js";
 
 export const submitScore = async (req, res) => {
   try {

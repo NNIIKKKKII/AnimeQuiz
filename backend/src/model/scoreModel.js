@@ -1,4 +1,5 @@
-import { pool } from "../data/db.js";
+import pool from "../config/db.js";
+
 
 export const saveScore = async (userId, score, streak, totalQuestions) => {
   await pool.query(

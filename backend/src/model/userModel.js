@@ -1,6 +1,7 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 
-export const createUser = async (username, ElementInternals, password) => {
+
+export const createUser = async (username, password) => {
   try {
     const result = await pool.query(
       `INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email`,

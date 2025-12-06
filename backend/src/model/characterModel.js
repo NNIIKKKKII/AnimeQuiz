@@ -1,4 +1,4 @@
-import { pool } from "../data/db.js";
+import { pool } from "../config/db.js";
 
 export const addCharacter = async (name, imageUrl) => {
   await pool.query(

@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import {
@@ -6,12 +6,12 @@ import {
   findUserByEmail,
   getUserByRefreshToken,
   saveRefreshToken,
-} from "../model/userModel";
+} from "../model/userModel.js";
 import {
   generateAcessToken,
   generateRefreshToken,
   verifyRefreshToken,
-} from "../utils/token";
+} from "../utils/token.js";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 //REGISTER
