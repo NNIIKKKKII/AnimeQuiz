@@ -42,6 +42,7 @@ const convertAndMove = async (file) => {
   }
 };
 
+
 const run = async () => {
   const files = fs.readdirSync(rawDir); //sync.. reads the files from the folder and stores it as array
 
@@ -54,3 +55,4 @@ const run = async () => {
 };
 
 run();
+

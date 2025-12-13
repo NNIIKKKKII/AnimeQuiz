@@ -4,6 +4,7 @@ import cors from "cors";
 import userRoutes from "./src/routes/userRoutes.js";
 import scoreRoutes from "./src/routes/scoreRoutes.js";
 import { initDB } from "./src/data/initDB.js";
+import quizRoutes from "./src/routes/quizRoutes.js";
 const port = 5000;
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(
 
 app.use("/api/users", userRoutes);
 app.use("/api/score", scoreRoutes);
+app.use("/api/quiz", quizRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend API is running!");
