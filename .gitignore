@@ -98,3 +98,5 @@ backend/.cache/
 # (uncomment if you store anime images locally)
 # uploads/
 # public/anime/
+backend/public/images/*
+backend/public/raw-images/*
