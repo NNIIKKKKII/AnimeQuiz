@@ -6,34 +6,45 @@ const QUIZ_TTL = 60; //60 seconds
 
 export const getRandomCharacterFromDB = async () => {
   try {
-    const cached = await redis.get(QUIZ_CACHE_KEY); // pulls the charcters from redis cache 
+    const cached = await redis.get(QUIZ_CACHE_KEY);
+
     if (cached) {
       console.log("✅ Redis cache hit");
-      const characters = JSON.parse(cached); // redis stores everything in string so it needs to converted into JSObject
+      const characters = JSON.parse(cached);
+
+      if (!characters.length) return null; // 🔑 IMPORTANT
+
       return characters[Math.floor(Math.random() * characters.length)];
     }
-    // this line will work when redis hit misses and pulls the charcters from DB
+
     const result = await pool.query(
-      `SELECT * from characters ORDER BY RANDOM() LIMIT 10`
+      `SELECT * FROM characters ORDER BY RANDOM() LIMIT 10`
     );
 
-    const charcters = result.rows;
+    const characters = result.rows;
 
-    await redis.setEx(QUIZ_CACHE_KEY, QUIZ_TTL, JSON.stringify(charcters)); // sets the 10 characters in redis cacche for next 60 seconds
+    if (!characters.length) return null; // 🔑 IMPORTANT
+
+    await redis.setEx(QUIZ_CACHE_KEY, QUIZ_TTL, JSON.stringify(characters));
+
     console.log("✅ Redis cache miss");
 
-    return charcters[Math.floor(Math.random() * charcters.length)];
+    return characters[Math.floor(Math.random() * characters.length)];
   } catch (error) {
     console.log(
       "error fetching random character from DB in quizModel.js",
       error
     );
+    return null;
   }
 };
 
-export const getCharacterNameByID = (id) => {
+export const getCharacterNameByID = async (id) => {
   try {
-    const response = pool.query(`SELECT * from characters WHERE id = $1`, [id]);
+    const response = await pool.query(
+      `SELECT * from characters WHERE id = $1`,
+      [id]
+    );
     return response.rows[0];
   } catch (err) {
     console.log("error fetching character by id  name in quizModel.js", err);

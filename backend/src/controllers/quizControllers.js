@@ -11,6 +11,7 @@ export const getRandomCharacter = async (req, res) => {
     if (!character) {
       return res.status(404).json({ message: "Character not found" });
     }
+    console.log("DB rows:", character);
 
     res.json({
       id: character.id,
@@ -27,7 +28,7 @@ export const verifyAnswer = async (req, res) => {
     const { id, guess } = req.body;
 
     if (!guess || !id) {
-      res.status(400).json({ message: "Data Missing !" });
+      return res.status(400).json({ message: "Data Missing !" });
     }
 
     const character = await getCharacterNameByID(id);

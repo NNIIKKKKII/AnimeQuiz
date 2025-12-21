@@ -15,6 +15,7 @@ app.use(
   })
 );
 
+app.use("/images", express.static("public/images"));
 
 app.use("/api/users", userRoutes);
 app.use("/api/score", scoreRoutes);

@@ -9,12 +9,12 @@ const Quiz = () => {
   const [score, setScore] = useState(0);
   const [questionCount, setQuestion] = useState(0);
   const [error, setError] = useState(null);
-  const [isloading, setLoading] = useState(null);
+  const [isloading, setLoading] = useState(false);
   const [guess, setGuess] = useState("");
 
-  useEffect(async () => {
-    await loadRandomCharacter();
-  });
+  useEffect(() => {
+    loadRandomCharacter();
+  }, []);
 
   const loadRandomCharacter = async () => {
     try {
@@ -35,7 +35,7 @@ const Quiz = () => {
     if (!guess.trim()) return; //this return is used to exit the function when nothing is passed and pressed submit
 
     try {
-      const res = await verifyAnswer(character._id, guess);
+      const res = await verifyAnswer(character.id, guess);
 
       setQuestion((q) => q + 1); //here i increment question count
 
@@ -55,7 +55,7 @@ const Quiz = () => {
     }
   };
 
-  if (loading && !currentCharcter) {
+  if (isloading && !character) {
     return <div className="text-center mt-10">Loading....</div>;
   }
 
@@ -67,12 +67,8 @@ const Quiz = () => {
         <span>Streak : {streak}</span>
       </div>
       // If charcter exists then show it
-      {currentCharcter && (
-        <img
-          src={currentCharcter.image_url}
-          alt="anime Character"
-          className=""
-        />
+      {character && (
+        <img src={character.image_url} alt="anime Character" className="" />
       )}
       <form onSubmit={handleSubmit} className="">
         <input

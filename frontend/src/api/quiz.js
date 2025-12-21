@@ -1,9 +1,11 @@
 import axios from "axios";
 
+const API_URL = "http://localhost:5000";
+
 export const getRandomCharacter = () => {
-  axios.post("/api/users/random");
+  return axios.get(`${API_URL}/api/quiz/random`);
 };
 
 export const verifyAnswer = (id, guess) => {
-  axios.post("/api/users/verify", { id, guess });
+  return axios.post(`${API_URL}/api/quiz/verify`, { id, guess });
 };
