@@ -1,8 +1,8 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 import {
   getRandomCharacterFromDB,
   getCharacterNameByID,
-} from "../model/quizModel";
+} from "../model/quizModel.js";
 
 export const getRandomCharacter = async (req, res) => {
   try {

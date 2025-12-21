@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 import redis from "../config/redis.js";
 
 const QUIZ_CACHE_KEY = "quiz:anime";
