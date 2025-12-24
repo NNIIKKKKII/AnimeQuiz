@@ -32,26 +32,31 @@ const Quiz = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!guess.trim()) return; //this return is used to exit the function when nothing is passed and pressed submit
+    if (isloading || !guess.trim()) return;
 
     try {
+      setLoading(true);
       const res = await verifyAnswer(character.id, guess);
 
-      setQuestion((q) => q + 1); //here i increment question count
+      setQuestion((q) => q + 1);
 
       if (res.data.correct) {
         setScore((s) => s + 1);
         setStreak((s) => s + 1);
-        loadRandomCharacter();
+        await loadRandomCharacter();
       } else {
         navigate("/result", {
-          score,
-          streak,
-          total: questionCount + 1,
+          state: {
+            score,
+            streak,
+            total: questionCount + 1,
+          },
         });
       }
-    } catch (err) {
-      setError("error Verifying Answer");
+    } catch {
+      setError("Error verifying answer");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,7 +73,12 @@ const Quiz = () => {
       </div>
       // If charcter exists then show it
       {character && (
-        <img src={character.image_url} alt="anime Character" className="" />
+        <img
+          key={character.id} // 🔥 THIS IS THE FIX
+          src={`http://localhost:5000${character.image_url}`}
+          alt="anime character"
+          className="w-64 h-64 object-cover rounded"
+        />
       )}
       <form onSubmit={handleSubmit} className="">
         <input
