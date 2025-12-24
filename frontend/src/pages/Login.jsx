@@ -1,19 +1,24 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { loginUser } from "../api/auth";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate(); // Add this line t
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Submitted");
 
-    const LoginData = {
-      email,
-      password,
-    };
-    console.log(LoginData);
+    try {
+      const res = await loginUser({ email, password });
+      localStorage.setItem("token", res.data.accessToken);
+      navigate("/quiz");
+    } catch {
+      setError("Invalid credentials");
+    }
   };
 
   return (
@@ -35,7 +40,7 @@ const Login = () => {
           />
           <input
             className="p-3  w-full bg-white rounded-lg m-1"
-            type="passwords"
+            type="password"
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

@@ -5,6 +5,8 @@ import userRoutes from "./src/routes/userRoutes.js";
 import scoreRoutes from "./src/routes/scoreRoutes.js";
 import { initDB } from "./src/data/initDB.js";
 import quizRoutes from "./src/routes/quizRoutes.js";
+import leaderboardRoutes from "./src/routes/leaderboardRoutes.js";
+import { leaderboard } from "./src/controllers/scoreController.js";
 const port = 5000;
 const app = express();
 
@@ -20,17 +22,22 @@ app.use("/images", express.static("public/images"));
 app.use("/api/users", userRoutes);
 app.use("/api/score", scoreRoutes);
 app.use("/api/quiz", quizRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend API is running!");
 });
 
-const startServer = async () => {
-  await initDB();
+// const startServer = async () => {
+//   await initDB();
 
-  app.listen(port, () => {
-    console.log(` Backend Server is running on port ${port}`);
-  });
-};
+//   app.listen(port, () => {
+//     console.log(` Backend Server is running on port ${port}`);
+//   });
+// };
 
-startServer();
+app.listen(port, () => {
+  console.log(` Backend Server is running on port ${port}`);
+});
+
+// startServer();

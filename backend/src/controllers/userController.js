@@ -8,7 +8,7 @@ import {
   saveRefreshToken,
 } from "../model/userModel.js";
 import {
-  generateAcessToken,
+  generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
 } from "../utils/token.js";
@@ -22,12 +22,12 @@ export const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-    const hashedPassword = await bycrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await createUser(username, email, hashedPassword);
 
     res.status(201).json({
       message: "User created successfully",
-      user,
+      newUser,
     });
   } catch (err) {
     console.error("Error creating user table in Usercontroller.js file:", err);
@@ -45,7 +45,7 @@ export const loginUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const match = await bcrypt.comapare(password, userEmail.password);
+    const match = await bcrypt.compare(password, userEmail.password_hash);
 
     if (!match) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -60,7 +60,7 @@ export const loginUser = async (req, res) => {
     //   { expiresIn: "24h" }
     // );
 
-    const accessToken = generateAcessToken(userEmail);
+    const accessToken = generateAccessToken(userEmail);
     const refreshToken = generateRefreshToken(userEmail);
 
     await saveRefreshToken(userEmail.id, refreshToken);
@@ -116,12 +116,10 @@ export const refreshAccessToken = async (req, res) => {
   }
 };
 
-
 export const logoutUser = async (req, res) => {
-    const { userId } = req.body;
-  
-    await saveRefreshToken(userId, null);
-  
-    res.json({ message: "Logged out" });
-  };
-  
+  const { userId } = req.body;
+
+  await saveRefreshToken(userId, null);
+
+  res.json({ message: "Logged out" });
+};

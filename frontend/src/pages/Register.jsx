@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { registerUser } from "../api/auth.js";
 const Register = () => {
   const navigate = useNavigate();
 
@@ -8,17 +8,22 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // registration logic will go here later
+    try {
+      await registerUser({ username, email, password });
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+      alert("Registration failed");
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
       <div className="w-full max-w-sm bg-gray-800 rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          Register
-        </h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Register</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input

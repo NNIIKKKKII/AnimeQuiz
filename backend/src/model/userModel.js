@@ -1,18 +1,18 @@
 import pool from "../config/db.js";
 
-
-export const createUser = async (username, password) => {
-  try {
-    const result = await pool.query(
-      `INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email`,
-      [username, email, password]
-    );
-    return result.rows[0];
-  } catch (err) {
-    console.error("Error creating user:", err);
-  }
+export const createUser = async (username, email, password) => {
+  const result = await pool.query(
+    `INSERT INTO users (username, email, password_hash)
+     VALUES ($1, $2, $3)
+     RETURNING id, username, email`,
+    [username, email, password]
+  );
+  return result.rows[0];
 };
-
+export const findUserById = async (id) => {
+  const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
+  return result.rows[0];
+};
 export const findUserByEmail = async (email) => {
   try {
     const repsonse = await pool.query(`SELECT * FROM users WHERE email = $1`, [
@@ -34,8 +34,6 @@ export const saveRefreshToken = async (userId, token) => {
     console.error("Error saving refresh token:", err);
   }
 };
-
-
 
 export const getUserByRefreshToken = async (refreshToken) => {
   try {
