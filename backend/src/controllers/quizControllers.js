@@ -2,49 +2,70 @@ import pool from "../config/db.js";
 import {
   getRandomCharacterFromDB,
   getCharacterNameByID,
+  getRandomCharacterExcluding,
 } from "../model/quizModel.js";
+import levenshtein from "fast-levenshtein";
+// import { normalize, getFirstName } from "../utils/normalize.js";
+
 import redisClient from "../config/redis.js";
 
+const normalize = (str) =>
+  str
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z]/g, "");
+
+const getFirstName = (fullName) => {
+  return normalize(fullName.split(" ")[0]);
+};
 
 export const getRandomCharacter = async (req, res) => {
   const start = Date.now();
 
   try {
-    const cached = await redisClient.get("random_character");
+    // 1️⃣ Read seen IDs from Redis
+    const redisStart = Date.now();
+    const seenIds = await redisClient.sMembers("quiz:seen");
+    const redisDuration = Date.now() - redisStart;
 
-    if (cached) {
-      const duration = Date.now() - start;
-      console.log(`🚀 Redis response time: ${duration} ms`);
-      return res.json(JSON.parse(cached));
+    console.log(`🚀 Redis read time: ${redisDuration} ms`);
+
+    const excludedIds = seenIds.map(Number);
+
+    // 2️⃣ Fetch random character excluding seen ones
+    const dbStart = Date.now();
+    const character = await getRandomCharacterExcluding(excludedIds);
+    const dbDuration = Date.now() - dbStart;
+
+    if (!character) {
+      await redisClient.del("quiz:seen");
+      return res.json({ done: true });
     }
 
-    console.log("❌ Redis cache miss");
+    console.log(`🐘 PostgreSQL response time: ${dbDuration} ms`);
 
-    const character = await getRandomCharacterFromDB();
+    // 3️⃣ Mark character as seen
+    await redisClient.sAdd("quiz:seen", String(character.id));
 
-    const response = {
+    // 4️⃣ Total request time
+    const totalDuration = Date.now() - start;
+    console.log(`⏱️ Total request time: ${totalDuration} ms`);
+
+    res.json({
       id: character.id,
       image_url: character.image_url,
-    };
-
-    await redisClient.setEx("random_character", 10, JSON.stringify(response));
-
-    const duration = Date.now() - start;
-    console.log(`🐘 PostgreSQL response time: ${duration} ms`);
-
-    res.json(response);
+    });
   } catch (err) {
-    console.error(err);
+    console.error("Quiz error:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 export const verifyAnswer = async (req, res) => {
   try {
     const { id, guess } = req.body;
 
-    if (!guess || !id) {
-      return res.status(400).json({ message: "Data Missing !" });
+    if (!id || !guess) {
+      return res.status(400).json({ message: "Missing data" });
     }
 
     const character = await getCharacterNameByID(id);
@@ -53,15 +74,32 @@ export const verifyAnswer = async (req, res) => {
       return res.status(404).json({ message: "Character not found" });
     }
 
-    const correct =
-      character.name.toLowerCase().trim() === guess.toLowerCase().trim();
+    const userGuess = normalize(guess);
+    const fullName = normalize(character.name);
+    const firstName = getFirstName(character.name);
 
-    res.json({
+    let correct = false;
+
+    // 1️⃣ First-name exact or close match
+    const firstNameDistance = levenshtein.get(userGuess, firstName);
+    if (firstNameDistance <= 1) {
+      correct = true;
+    }
+
+    // 2️⃣ Full-name fuzzy match (fallback)
+    if (!correct) {
+      const fullNameDistance = levenshtein.get(userGuess, fullName);
+      if (fullNameDistance <= 2) {
+        correct = true;
+      }
+    }
+
+    return res.json({
       correct,
       ...(correct ? {} : { answer: character.name }),
     });
   } catch (err) {
-    console.log("error verifying answer in quizController.js", err);
+    console.error("verifyAnswer error:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

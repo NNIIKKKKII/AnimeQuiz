@@ -50,3 +50,15 @@ export const getCharacterNameByID = async (id) => {
     console.log("error fetching character by id  name in quizModel.js", err);
   }
 };
+
+export const getRandomCharacterExcluding = async (excludedIds) => {
+  const query = excludedIds.length
+    ? `SELECT id, image_url FROM characters
+       WHERE id NOT IN (${excludedIds.join(",")})
+       ORDER BY RANDOM() LIMIT 1`
+    : `SELECT id, image_url FROM characters
+       ORDER BY RANDOM() LIMIT 1`;
+
+  const res = await pool.query(query);
+  return res.rows[0];
+};

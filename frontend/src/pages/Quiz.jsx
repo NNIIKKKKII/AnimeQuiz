@@ -65,31 +65,35 @@ const Quiz = () => {
   }
 
   return (
-    <div>
-      <h1>Anime Quiz</h1>
+    <div className="flex  flex-col justify-center items-center  bg-purple-300 h-screen">
+      <h1 className="text-5xl font-bold mb-30">Anime Quiz</h1>
       <div>
-        <span>Score : {score}</span>
-        <span>Streak : {streak}</span>
+        <span className="m-1">Score : {score}</span>
+        <span className="m-1">Streak : {streak}</span>
       </div>
-      // If charcter exists then show it
-      {character && (
+
+      {character?.image_url && (
         <img
-          key={character.id} // 🔥 THIS IS THE FIX
+          key={character.id}
           src={`http://localhost:5000${character.image_url}`}
           alt="anime character"
           className="w-64 h-64 object-cover rounded"
         />
       )}
+
       <form onSubmit={handleSubmit} className="">
         <input
           type="text"
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           placeholder="Enter Character Name"
-          className=""
+          className="mt-1 p-2 rounded-lg"
         />
 
-        <button type="submit" className="">
+        <button
+          type="submit"
+          className="ml-1 p-2 bg-blue-400 text-white rounded-lg"
+        >
           Submit
         </button>
 
